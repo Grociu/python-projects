@@ -18,7 +18,7 @@ While not strictly needed to implement the game aspect of the project, I know th
     c) outcome screen with try again button
     d) running tally of results (unittested?)
 6. A main game screen for 2 player game, divided in two
-    a) instead of buttons, keyboard shortcuts for left/rigt side of keyboard. with instructions
+    a) instead of buttons, keyboard shortcuts for left/right side of keyboard. with instructions
     b) detect keystrokes
     c) your outcomes are confirmed
     d) outcome screen, try again button
