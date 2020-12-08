@@ -127,18 +127,48 @@ class PlayerWindow(tk.LabelFrame):
         if not self.choice:
             self.choice_made()
             self.choice = Choice.ROCK
+            game()
 
 
     def paper(self, _event=None):
         if not self.choice:
             self.choice_made()
             self.choice = Choice.PAPER
-
+            game()
 
     def scissors(self, _event=None):
         if not self.choice:
             self.choice_made()
             self.choice = Choice.SCISSORS
+            game()
+
+
+class MiddleScreen(tk.LabelFrame):
+    """
+    Class governing the middle section of the screen.
+    Contains the instructions, last result, record of previous results, quit
+    reset and single/multiplayer menu buttons.
+    """
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.setup_mid_frame()
+
+    def setup_mid_frame(self):
+        """
+        This function defines a start position for a game, a hard reset on the
+        game record. 
+        Resets the tally of previous results.
+        Puts the widgets in the frame.
+        """
+        self.results_so_far = []
+
+        # widgets
+        # Instructions
+        # Last Game
+        # Record so far
+        # Reset record button
+        # Quit Button
+        # Single/multiplayer button
 
 
 def main():
@@ -168,10 +198,24 @@ p2_shortcuts = ["O", "P", "L"]
 
 # Setup the Game window
 p1 = PlayerWindow(p1_shortcuts, root, text="Player 1", width=300, height=400)
-p1.grid(row=1, column=1)
+p1.grid(row=0, column=0)
 
 p2 = PlayerWindow(p2_shortcuts, root, text="Player 2", width=300, height=400)
-p2.grid(row=1, column=2)
+p2.grid(row=0, column=2)
+
+mid = MiddleScreen(root, text="Tally", width=200, height=355)
+mid.grid(row=0, column=1)
+
+def game():
+    """
+    After any button is pushed, tries to execute a game or RPS
+    """
+    if p1.choice and p2.choice:
+        #print(p1.choice)
+        #print(p2.choice)
+        #print(rock_paper_scissors(p1.choice, p2.choice))
+        return rock_paper_scissors(p1.choice, p2.choice)
+
 
 # Main Tkinter Loop
 root.mainloop()
