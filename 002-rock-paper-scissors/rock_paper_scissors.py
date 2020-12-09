@@ -6,15 +6,15 @@ import tkinter as tk
 
 # Define data types for rock, paper, scissors and outcomes.
 class Choice(Enum):
-    ROCK = 1
-    PAPER = 2
-    SCISSORS = 3
+    ROCK = "rock"
+    PAPER = "paper"
+    SCISSORS = "scissors"
 
 class Outcome(Enum):
-    UNDETERMINED = 1
-    PLAYER1_WIN = 1
-    PLAYER2_WIN = 2
-    DRAW = 3
+    UNDETERMINED = 0
+    PLAYER1_WIN = "beats"
+    PLAYER2_WIN = "loses to"
+    DRAW = "draws"
 
 def rock_paper_scissors(choice_player_1, choice_player_2):
     """
@@ -151,6 +151,7 @@ class MiddleScreen(tk.LabelFrame):
     """
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self.results_so_far = []
         self.setup_mid_frame()
 
     def setup_mid_frame(self):
@@ -160,15 +161,103 @@ class MiddleScreen(tk.LabelFrame):
         Resets the tally of previous results.
         Puts the widgets in the frame.
         """
-        self.results_so_far = []
+        self.results_so_far.clear()
 
-        # widgets
+        # Setup widgets
         # Instructions
+        self.game_instruction = tk.Label(
+            self,
+            text="Rock, Paper or Scissors\n\n" \
+                "Choose using:\n" \
+                "> Buttons under images\n" \
+                "> Keyboard shortcuts!"
+            )
+        self.game_instruction.grid(row=0, column=0, columnspan=3)
+
         # Last Game
+        self.last_game = tk.Label(self, text="Last Game:")
+        self.last_game.grid(row=1, column=1, pady=10)
+
+        self.last_game_p1 = tk.Label(self, text=" "*15)
+        self.last_game_p1.grid_forget()
+        self.last_game_p1.grid(row=2, column=0, pady=10)
+
+        self.last_game_p2 = tk.Label(self, text=" "*15)
+        self.last_game_p2.grid_forget()
+        self.last_game_p2.grid(row=2, column=2, pady=10)
+
+        self.last_result = tk.Label(self, text=" "*15)
+        self.last_result.grid_forget()
+        self.last_result.grid(row=2, column=1, pady=10)
+
         # Record so far
-        # Reset record button
-        # Quit Button
+        self.this_session = tk.Label(self, text="This Session:")
+        self.this_session.grid(row=3, column=1, pady=10)
+        
+        self.wins_p1 = tk.Label(self, text="0 won")
+        self.wins_p1.grid_forget()
+        self.wins_p1.grid(row=4, column=0, pady=10)
+
+        self.wins_p2 = tk.Label(self, text="0 won")
+        self.wins_p2.grid_forget()
+        self.wins_p2.grid(row=4, column=2, pady=10)
+
+        self.draws = tk.Label(self, text="0 draws")
+        self.draws.grid_forget()
+        self.draws.grid(row=4, column=1, pady=10)
+        
         # Single/multiplayer button
+        self.mode_button = tk.Button(self, text="Mode", command=mode)
+        self.mode_button.grid(row=5, column=0, pady=50)
+        # Reset record button
+        self.reset_button = tk.Button(
+            self, text="Reset", command=self.setup_mid_frame
+            )
+        self.reset_button.grid(row=5, column=1, pady=50)
+        # Quit Button
+        self.quit_button = tk.Button(self, text="Quit", command=root.quit)
+        self.quit_button.grid(row=5, column=2, pady=50)
+
+    def game_happened(self, p1, p2, result):
+        """ Updates the frame to account for the last game played. """
+        
+        # Add the latest result to the list
+        self.results_so_far.append(result)
+
+        # Update the Labels
+        self.last_game_p1.grid_forget()
+        self.last_game_p1 = tk.Label(self, text=p1.value)
+        self.last_game_p1.grid(row=2, column=0, pady=10)
+        self.last_game_p2.grid_forget()
+        self.last_game_p2 = tk.Label(self, text=p2.value)
+        self.last_game_p2.grid(row=2, column=2, pady=10)
+        self.last_result.grid_forget()
+        self.last_result = tk.Label(self, text=result.value)
+        self.last_result.grid(row=2, column=1, pady=10)
+
+        self.wins_p1.grid_forget()
+        self.wins_p1 = tk.Label(
+            self, text=f"{self.results_so_far.count(Outcome.PLAYER1_WIN)} won"
+            )
+        self.wins_p1.grid(row=4, column=0, pady=10)
+        self.wins_p2.grid_forget()
+        self.wins_p2 = tk.Label(
+            self, text=f"{self.results_so_far.count(Outcome.PLAYER2_WIN)} won"
+            )
+        self.wins_p2.grid(row=4, column=2, pady=10)
+        self.draws.grid_forget()
+        self.draws = tk.Label(
+            self, text=f"{self.results_so_far.count(Outcome.DRAW)} draws"
+            )
+        self.draws.grid(row=4, column=1, pady=10)
+
+
+def mode():
+    """
+    Switch between 1P and 2P modes.
+    Executed when Mode button is pushed
+    """
+    pass
 
 
 def main():
@@ -211,10 +300,10 @@ def game():
     After any button is pushed, tries to execute a game or RPS
     """
     if p1.choice and p2.choice:
-        #print(p1.choice)
-        #print(p2.choice)
-        #print(rock_paper_scissors(p1.choice, p2.choice))
-        return rock_paper_scissors(p1.choice, p2.choice)
+        result = rock_paper_scissors(p1.choice, p2.choice)
+        mid.game_happened(p1.choice, p2.choice, result)
+        p1.setup_frame()
+        p2.setup_frame()
 
 
 # Main Tkinter Loop
