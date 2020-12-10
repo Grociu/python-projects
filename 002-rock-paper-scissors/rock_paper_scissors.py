@@ -11,11 +11,13 @@ class Choice(Enum):
     PAPER = "paper"
     SCISSORS = "scissors"
 
+
 class Outcome(Enum):
     UNDETERMINED = 0
     PLAYER1_WIN = "beats"
     PLAYER2_WIN = "loses to"
     DRAW = "draws"
+
 
 def rock_paper_scissors(choice_player_1, choice_player_2):
     """
@@ -24,10 +26,10 @@ def rock_paper_scissors(choice_player_1, choice_player_2):
     Returns instances of Outcome.
     """
     if not (
-        isinstance(choice_player_1, Choice) and 
+        isinstance(choice_player_1, Choice) and
         isinstance(choice_player_2, Choice)
     ):
-        raise TypeError("Invalid Input") 
+        raise TypeError("Invalid Input")
     if choice_player_1 == choice_player_2:
         return Outcome.DRAW
     if (
@@ -41,6 +43,7 @@ def rock_paper_scissors(choice_player_1, choice_player_2):
     else:
         return Outcome.PLAYER2_WIN
 
+
 def mode():
     """
     Switch between 1P and 2P modes.
@@ -48,8 +51,8 @@ def mode():
     """
     mode_selected = messagebox.askquestion(
         "Mode selection",
-        "Game supports two modes:\n\n\n" \
-        "YES: Singleplayer vs a random AI\n\n" \
+        "Game supports two modes:\n\n\n"
+        "YES: Singleplayer vs a random AI\n\n"
         "NO: Hotseat Multiplayer"
         )
     if mode_selected == "yes":
@@ -58,6 +61,7 @@ def mode():
         p2.isAI = False
     mid.setup_mid_frame()
     p2.setup_frame()
+
 
 class PlayerWindow(tk.LabelFrame):
 
@@ -79,7 +83,7 @@ class PlayerWindow(tk.LabelFrame):
         Sets up the frame at game start, ready to receive player input.
         """
         self.choice = None
-        
+
         self.rock_picture = tk.Label(self, image=rock_img)
         self.rock_picture.grid(row=1, column=0)
 
@@ -88,7 +92,7 @@ class PlayerWindow(tk.LabelFrame):
             relief='sunken'
             )
         self.rock_button.grid(row=2, column=0)
-        
+
         self.paper_picture = tk.Label(self, image=paper_img)
         self.paper_picture.grid(row=1, column=2)
 
@@ -100,7 +104,7 @@ class PlayerWindow(tk.LabelFrame):
 
         self.scissors_picture = tk.Label(self, image=scissors_img)
         self.scissors_picture.grid(row=3, column=1)
-        
+
         self.scissors_button = tk.Button(
             self, text=f"scissors ({self.shortcuts[2]})",
             command=self.scissors, relief='sunken'
@@ -127,8 +131,8 @@ class PlayerWindow(tk.LabelFrame):
         self.rock_button.grid(row=2, column=0)
 
         self.paper_button = tk.Button(
-            self, text=f"paper ({self.shortcuts[1]})", 
-             relief='sunken', command=self.paper,
+            self, text=f"paper ({self.shortcuts[1]})",
+            relief='sunken', command=self.paper,
             state="disabled"
         )
         self.paper_button.grid(row=2, column=2)
@@ -143,14 +147,12 @@ class PlayerWindow(tk.LabelFrame):
         self.choice_label.grid_forget()
         self.choice_label = tk.Label(self, text="Player has chosen!")
         self.choice_label.grid(row=5, column=1, pady=30)
-    
 
     def rock(self, _event=None):  # _event=None is needed for the keybindings
         if not self.choice:
             self.choice_made()
             self.choice = Choice.ROCK
             game()
-
 
     def paper(self, _event=None):
         if not self.choice:
@@ -179,7 +181,7 @@ class MiddleScreen(tk.LabelFrame):
     def setup_mid_frame(self):
         """
         This function defines a start position for a game, a hard reset on the
-        game record. 
+        game record.
         Resets the tally of previous results.
         Puts the widgets in the frame.
         """
@@ -189,10 +191,10 @@ class MiddleScreen(tk.LabelFrame):
         # Instructions
         self.game_instruction = tk.Label(
             self,
-            text="Rock, Paper or Scissors\n\n" \
-                "Choose using:\n" \
-                "> Buttons under images\n" \
-                "> Keyboard shortcuts!"
+            text="Rock, Paper or Scissors\n\n"
+            "Choose using:\n"
+            "> Buttons under images\n"
+            "> Keyboard shortcuts!"
             )
         self.game_instruction.grid(row=0, column=0, columnspan=3)
 
@@ -215,7 +217,7 @@ class MiddleScreen(tk.LabelFrame):
         # Record so far
         self.this_session = tk.Label(self, text="This Session:")
         self.this_session.grid(row=3, column=1, pady=10)
-        
+
         self.wins_p1 = tk.Label(self, text="0 won")
         self.wins_p1.grid_forget()
         self.wins_p1.grid(row=4, column=0, pady=10)
@@ -227,7 +229,7 @@ class MiddleScreen(tk.LabelFrame):
         self.draws = tk.Label(self, text="0 draws")
         self.draws.grid_forget()
         self.draws.grid(row=4, column=1, pady=10)
-        
+
         # Single/multiplayer button
         self.mode_button = tk.Button(self, text="Mode", command=mode)
         self.mode_button.grid(row=5, column=0, pady=50)
@@ -242,7 +244,7 @@ class MiddleScreen(tk.LabelFrame):
 
     def game_happened(self, p1, p2, result):
         """ Updates the frame to account for the last game played. """
-        
+
         # Add the latest result to the list
         self.results_so_far.append(result)
 
@@ -278,7 +280,7 @@ class MiddleScreen(tk.LabelFrame):
 root = tk.Tk()
 root.title("Rock, Paper, Scissors!")
 root.iconbitmap("002-rock-paper-scissors/resources/game.ico")
-root.geometry("800x400") # 300 200 300
+root.geometry("800x400")  # 300 200 300
 
 # Tkinter setup for images
 rock_img = ImageTk.PhotoImage(
@@ -305,6 +307,7 @@ p2.grid(row=0, column=2)
 mid = MiddleScreen(root, text="Tally", width=200, height=355)
 mid.grid(row=0, column=1)
 
+
 def game():
     """
     After any button is pushed, tries to execute a game or RPS
@@ -319,6 +322,7 @@ def game():
 def main():
     mode()
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
