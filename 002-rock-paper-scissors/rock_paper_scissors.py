@@ -1,6 +1,7 @@
 from enum import Enum
 from PIL import ImageTk, Image
 import random
+from tkinter import messagebox
 import tkinter as tk
 
 
@@ -40,6 +41,23 @@ def rock_paper_scissors(choice_player_1, choice_player_2):
     else:
         return Outcome.PLAYER2_WIN
 
+def mode():
+    """
+    Switch between 1P and 2P modes.
+    Executed at startup and when mode button is pushed
+    """
+    mode_selected = messagebox.askquestion(
+        "Mode selection",
+        "Game supports two modes:\n\n\n" \
+        "YES: Singleplayer vs a random AI\n\n" \
+        "NO: Hotseat Multiplayer"
+        )
+    if mode_selected == "yes":
+        p2.isAI = True
+    else:
+        p2.isAI = False
+    mid.setup_mid_frame()
+    p2.setup_frame()
 
 class PlayerWindow(tk.LabelFrame):
 
@@ -53,6 +71,7 @@ class PlayerWindow(tk.LabelFrame):
         master.bind(shortcuts[2], self.scissors)
         master.bind(shortcuts[2].lower(), self.scissors)
         self.shortcuts = shortcuts
+        self.isAI = False
         self.setup_frame()
 
     def setup_frame(self):
@@ -91,6 +110,9 @@ class PlayerWindow(tk.LabelFrame):
         self.choice_label = tk.Label(self, text="No choice made")
         self.choice_label.grid(row=5, column=1, pady=30)
 
+        if self.isAI:
+            AI_choice = random.choice([self.rock, self.paper, self.scissors])
+            AI_choice()
 
     def choice_made(self):
         """
@@ -252,18 +274,6 @@ class MiddleScreen(tk.LabelFrame):
         self.draws.grid(row=4, column=1, pady=10)
 
 
-def mode():
-    """
-    Switch between 1P and 2P modes.
-    Executed when Mode button is pushed
-    """
-    pass
-
-
-def main():
-    pass
-
-
 # Main Game Window
 root = tk.Tk()
 root.title("Rock, Paper, Scissors!")
@@ -306,8 +316,9 @@ def game():
         p2.setup_frame()
 
 
-# Main Tkinter Loop
-root.mainloop()
+def main():
+    mode()
+    root.mainloop()
 
 if __name__ == '__main__':
     main()
