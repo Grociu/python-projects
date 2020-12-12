@@ -112,7 +112,7 @@ class PlayerWindow(tk.LabelFrame):
         self.scissors_button.grid(row=4, column=1)
 
         self.choice_label = tk.Label(self, text="No choice made")
-        self.choice_label.grid(row=5, column=1, pady=30)
+        self.choice_label.grid(row=5, column=1, pady=(30, 10))
 
         if self.isAI:
             AI_choice = random.choice([self.rock, self.paper, self.scissors])
@@ -146,7 +146,7 @@ class PlayerWindow(tk.LabelFrame):
 
         self.choice_label.grid_forget()
         self.choice_label = tk.Label(self, text="Player has chosen!")
-        self.choice_label.grid(row=5, column=1, pady=30)
+        self.choice_label.grid(row=5, column=1, pady=(30, 10))
 
     def rock(self, _event=None):  # _event=None is needed for the keybindings
         if not self.choice:
@@ -191,7 +191,7 @@ class MiddleScreen(tk.LabelFrame):
         # Instructions
         self.game_instruction = tk.Label(
             self,
-            text="Rock, Paper or Scissors\n\n"
+            text="Rock, Paper or Scissors?\n\n"
             "Choose using:\n"
             "> Buttons under images\n"
             "> Keyboard shortcuts!"
@@ -232,15 +232,15 @@ class MiddleScreen(tk.LabelFrame):
 
         # Single/multiplayer button
         self.mode_button = tk.Button(self, text="Mode", command=mode)
-        self.mode_button.grid(row=5, column=0, pady=50)
+        self.mode_button.grid(row=5, column=0, pady=(40, 0))
         # Reset record button
         self.reset_button = tk.Button(
             self, text="Reset", command=self.setup_mid_frame
             )
-        self.reset_button.grid(row=5, column=1, pady=50)
+        self.reset_button.grid(row=5, column=1, pady=(40, 0))
         # Quit Button
         self.quit_button = tk.Button(self, text="Quit", command=root.quit)
-        self.quit_button.grid(row=5, column=2, pady=50)
+        self.quit_button.grid(row=5, column=2, pady=(40, 0))
 
     def game_happened(self, p1, p2, result):
         """ Updates the frame to account for the last game played. """
@@ -299,13 +299,13 @@ p2_shortcuts = ["O", "P", "L"]
 
 # Setup the Game window
 p1 = PlayerWindow(p1_shortcuts, root, text="Player 1", width=300, height=400)
-p1.grid(row=0, column=0)
+p1.grid(row=0, column=0, sticky='ns')
 
 p2 = PlayerWindow(p2_shortcuts, root, text="Player 2", width=300, height=400)
-p2.grid(row=0, column=2)
+p2.grid(row=0, column=2, sticky='ns')
 
-mid = MiddleScreen(root, text="Tally", width=200, height=355)
-mid.grid(row=0, column=1)
+mid = MiddleScreen(root, text="Tally", width=200, height=400)
+mid.grid(row=0, column=1, sticky='ns')
 
 
 def game():
