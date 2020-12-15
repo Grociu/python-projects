@@ -1,6 +1,7 @@
 import requests
 import bs4
 
+
 def is_in_dictionary(word):
     """
     Checks whether a given word (string) is in the dictionary, by requesting it
@@ -16,15 +17,16 @@ def password(word=""):
     Returns the word (string) given as argument or a random word from the
     randoword.com website using requests and BeautifulSoup.
     """
-    if word and word.isalpha() and is_in_dictionary(word): 
+    if word and word.isalpha() and is_in_dictionary(word):
         return word
     else:
-        while not word.isalpha() or not is_in_dictionary(word): 
-            rw_url="https://randomword.com/"
+        while not word.isalpha() or not is_in_dictionary(word):
+            rw_url = "https://randomword.com/"
             rw_page = requests.get(rw_url)
             rw_soup = bs4.BeautifulSoup(rw_page.content, "html.parser")
-            word = rw_soup.find("div", id = "random_word").text
+            word = rw_soup.find("div", id="random_word").text
         return word
+
 
 class HangmanGame():
     """
@@ -79,11 +81,11 @@ class HangmanGame():
         print(
             " ".join(
                 char
-                if char in self.already_guessed 
-                else "_" 
+                if char in self.already_guessed
+                else "_"
                 for char in self.password
                 )
-        )   
+        )
         print("\n")
 
     def draw_stats(self):
@@ -102,7 +104,9 @@ class HangmanGame():
         """
         Checks if the player won the game.
         """
-        if set(char for char in self.password).issubset(set(self.already_guessed)):
+        if set(
+            char for char in self.password
+        ).issubset(set(self.already_guessed)):
             self.game_won = True
             self.game_in_progress = False
 
@@ -115,13 +119,15 @@ class HangmanGame():
 
 
 def greeting():
-    print(f"Welcome to Hangman!")
+    print("Welcome to Hangman!")
     name_choice()
+
 
 def name_choice():
     global player_name
-    player_name = input(f"Enter your name: ")
+    player_name = input("Enter your name: ")
     main_menu()
+
 
 def main_menu():
     global player_name
@@ -140,9 +146,11 @@ def main_menu():
     if choice == "n":
         game()
 
+
 def goodbye():
     global player_name
     print(f"Thanks for playing {player_name}!")
+
 
 def game():
     """
@@ -158,9 +166,9 @@ def game():
         Game.draw_the_password()
         Game.draw_stats()
         while (
-            not guess.isalpha() #has to be a letter
-            or len(guess) != 1  #has to be a single char
-            or guess in Game.already_guessed  #has to be a unique char
+            not guess.isalpha()  # has to be a letter
+            or len(guess) != 1  # has to be a single char
+            or guess in Game.already_guessed  # has to be a unique char
         ):
             guess = input("Guess a letter in the magic word: ")
         Game.guess(guess)
@@ -177,6 +185,7 @@ def game():
 
 def main():
     greeting()
+
 
 if __name__ == '__main__':
     main()
