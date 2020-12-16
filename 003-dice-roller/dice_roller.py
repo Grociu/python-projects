@@ -18,14 +18,64 @@ class Dice(object):
         self.result = random.randint(1, self.sides)
 
 
+class DicePool(object):
+    """
+    Class that represents a collection of dice objects.
+
+    Attributes:
+        .pool - a list of Dice objects in the DicePool
+        .counter - a dictionary with a specific count of each die
+
+    Methods:
+        add() - adds a die to DicePool
+        repr() - represents the DicePool as a string
+    """
+    def __init__(self):
+        self.pool = []
+        self.counter = dict()
+        self.order = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"]
+
+    def add(self, die):
+        """
+        Adds a Dice object to .pool, updates .counter
+        """
+        if isinstance(die, Dice):
+            self.pool.append(die)
+            if die.name in self.counter:
+                self.counter[die.name] += 1
+            else:
+                self.counter[die.name] = 1
+
+    def __repr__(self):
+        """ This also orders the dice in ascending order """
+        return "  ".join(
+            f"{self.counter[name]}{name}"
+            for name in self.order
+            if name in self.counter.keys()
+            )
+
+
 # Global Variable for the Dice Pool
-dice_pool = []
+dice_pool = DicePool()
 
 
 # Functions
 def add_die(sides):
     """ Adds a Dice(sides) object into  the dice pool to be rolled. """
-    pass
+    global dice_pool
+    global dice_pool_window
+
+    dice_pool.add(Dice(sides))
+
+    dice_pool_window.grid_forget()
+    dice_pool_window = tk.Label(
+        root,
+        background='white',
+        text=repr(dice_pool)
+        )
+    dice_pool_window.grid(
+        row=3, column=0, columnspan=7, ipady=30, padx=10, sticky='we'
+        )
 
 
 # Setup of tkinter
@@ -63,6 +113,12 @@ d100_button.grid(row=1, column=6, padx=(8, 20))
 dice_pool_label = tk.Label(root, text="Current dicepool:")
 dice_pool_label.grid(
     row=2, column=0, columnspan=7, padx=10, pady=10, sticky='w'
+    )
+
+# Dice pool window
+dice_pool_window = tk.Label(root, background='white', text='empty')
+dice_pool_window.grid(
+    row=3, column=0, columnspan=7, padx=10, ipady=30, sticky='we'
     )
 
 if __name__ == '__main__':
