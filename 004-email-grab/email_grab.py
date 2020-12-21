@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup as bs
 import re
 import requests
 import tkinter as tk
+from tkinter import filedialog
+from tkinter import messagebox
 
 
 def cook_soup(link):
@@ -60,8 +62,8 @@ def get_all_email_addresses(link):
 class MainApplication(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title = "E-mail Address Grabber"
-        self.geometry = "600x300"
+        self.title("E-mail Address Grabber")
+        self.geometry("600x350")
         self.elements_startup()
 
     def elements_startup(self):
@@ -92,6 +94,10 @@ class MainApplication(tk.Tk):
         self.output_window = tk.Text(self, height=12, width=65)
         self.output_window.grid(row=7, column=0, columnspan=3, padx=10)
 
+        self.write_to_file_button = tk.Button(
+            self, text="Save to file", command=self.save)
+        self.write_to_file_button.grid(row=8, column=1, pady=5, sticky='e')
+
     def execute(self):
         """ Function that runs when the get Run button is pushed """
         self.output_window.delete('1.0', 'end')
@@ -106,6 +112,19 @@ class MainApplication(tk.Tk):
             self.feedback['text'] = (
                 'Request error, Invalid URL\nTry adding http://'
             )
+
+    def save(self):
+        """ Saves the output of the output_window to a text file """
+        save_text_as = filedialog.asksaveasfile(
+            mode='w', defaultextension='.txt'
+            )                             # asks the user to specify a filename
+
+        if save_text_as:  # if a filename is selected
+            text_to_save = self.output_window.get('1.0', 'end')  # get text
+            save_text_as.write(text_to_save)  # write text to file
+            save_text_as.close()  # close the file
+        else:  # if user cancelled then:
+            messagebox.showinfo("Error", "Cancelled")  # show a popup
 
 
 if __name__ == '__main__':
