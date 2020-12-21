@@ -29,14 +29,16 @@ class TestEmailValidator(unittest.TestCase):
         These examples are SPECIFICALLY selected for the regex to pass,
         There exist invalid e-mail addresses that get 'found' by the function,
         but this is not the scope of this exercise.
-        An e-mail validation formula can be found on StackOverflow if needed,
-        but it ain't pretty.
+        There exist examples of invalid email addresses that get matched,
+        because a valid e-mail address is a substring of the example delimited
+        by a non-word character (@).
+        A comprehensive  e-mail validation formula can be found on
+        StackOverflow if needed, but it ain't pretty.
         """
         invalid_emails = [
             'plainaddress', '#@%^%#$@#$@#.com', '@example.com',
-            'Joe Smith <email@example.com>', 'email.example.com',
-            'email@example@example.com', 'あいうえお@example.com',
-            'email@example.com (Joe Smith)', 'email@example'
+            'email.example.com', 'あいうえお@example.com',
+            'email@example'
         ]
         for mail in invalid_emails:
             self.assertEquals(grab_emails(mail), [])

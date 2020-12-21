@@ -13,19 +13,19 @@ def cook_soup(link):
 
 def grab_emails(text):
     """
-    Grabs strings that look like e-mail addresses from a long string
+    Grabs wordlike strings that look like e-mail addresses from a long string
     Returns a list of strings (e-mails)
     Using a basic regex pattern, nothing too fancy
     """
     email_match = re.compile(
         r"""
-        ^                 # at the start of the string
+        \b                # at the start of a word
         [a-zA-Z0-9_.+-]+  # match a sequence of at least 1 ch num _ . + or -
         @                 # then a single @
         [a-zA-Z0-9-]+     # domain names similar to username
         \.                # a literal dot
         [a-zA-Z0-9-.]+    # then more letters/numbers
-        $                 # at the end of the string
+        \b                # at the end of a word
         """, re.X         # same as re.VERBOSE, enable use of comments here
         )
     return re.findall(email_match, text)
