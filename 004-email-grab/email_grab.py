@@ -31,49 +31,83 @@ def grab_emails(text):
     return re.findall(email_match, text)
 
 
-def execute():
-    global feedback
-    global output_window
-    """ Function that runs when the get Run button is pushed """
-    output_window.delete('1.0', 'end')
-    url = input_window.get()
+class InvalidURLError(Exception):
+    """Exception raised if the URL input is invalid
+    Attributes:
+        expression -- input that caused the error
+        message -- explanation of the error
+    """
+    def __init__(self, expression, message="Invalid URL, try adding http://"):
+        self.expression = expression
+        self.message = message
+
+
+def get_all_email_addresses(link):
+    """
+    Provided an url as string, returns a list of all valid e-mail addresses
+    In the target website.
+    Raises an InvalidURLError exception if a request is bad
+    """
     try:
-        soup = cook_soup(url)
+        soup = cook_soup(link)
         text = soup.get_text()
         emails = grab_emails(text)
-        output_window.insert('end', ", \n".join(emails))
-        feedback['fg'] = 'green'
-        feedback['text'] = 'Executed correctly'
+        return emails
     except requests.exceptions.MissingSchema:
-        feedback['fg'] = 'red'
-        feedback['text'] = 'Request error, Invalid URL\nTry adding http://'
+        raise InvalidURLError(link)
 
 
-root = tk.Tk()
-root.title("E-mail Address Grabber")
-root.geometry("600x300")
+class MainApplication(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title = "E-mail Address Grabber"
+        self.geometry = "600x300"
+        self.elements_startup()
 
-input_window_label = tk.Label(root, text="Paste URL here:")
-input_window_label.grid(row=0, column=0, padx=5)
+    def elements_startup(self):
+        """ Initializes widgets of the app """
+        self.input_window_label = tk.Label(self, text="Paste URL here:")
+        self.input_window_label.grid(row=0, column=0, padx=5)
 
-input_window = tk.Entry(root, width=70)
-input_window.grid(row=0, column=1, padx=5)
+        self.input_window = tk.Entry(self, width=70)
+        self.input_window.insert(  # Added as an example of functionality
+            0, "https://en.wikipedia.org/wiki/Email_address"
+            )
+        self.input_window.grid(row=0, column=1, padx=5)
 
-submit_button = tk.Button(root, text="Run", command=execute)
-submit_button.grid(row=0, column=2, padx=5, ipadx=4)
+        self.submit_button = tk.Button(
+            self, text="Run", command=self.execute
+            )
+        self.submit_button.grid(row=0, column=2, padx=5, ipadx=4)
 
-feedback_label = tk.Label(root, text="Progress:")
-feedback_label.grid(row=4, column=0)
+        self.feedback_label = tk.Label(self, text="Progress:")
+        self.feedback_label.grid(row=4, column=0)
 
-feedback = tk.Label(root, text="", fg="red")
-feedback.grid(row=5, column=1, columnspan=2)
+        self.feedback = tk.Label(self, text="", fg="red")
+        self.feedback.grid(row=5, column=1, columnspan=2)
 
-output_label = tk.Label(root, text="Output:")
-output_label.grid(row=6, column=0)
+        self.output_label = tk.Label(self, text="Output:")
+        self.output_label.grid(row=6, column=0)
 
-output_window = tk.Text(root, height=12, width=65)
-output_window.grid(row=7, column=0, columnspan=3, padx=10)
+        self.output_window = tk.Text(self, height=12, width=65)
+        self.output_window.grid(row=7, column=0, columnspan=3, padx=10)
+
+    def execute(self):
+        """ Function that runs when the get Run button is pushed """
+        self.output_window.delete('1.0', 'end')
+        url = self.input_window.get()
+        try:
+            emails = get_all_email_addresses(url)
+            self.output_window.insert('end', ", \n".join(emails))
+            self.feedback['fg'] = 'green'
+            self.feedback['text'] = 'Executed correctly'
+        except InvalidURLError:
+            self.feedback['fg'] = 'red'
+            self.feedback['text'] = (
+                'Request error, Invalid URL\nTry adding http://'
+            )
 
 
 if __name__ == '__main__':
-    root.mainloop()
+    App = MainApplication()
+    App.mainloop()
