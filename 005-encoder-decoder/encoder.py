@@ -1,3 +1,4 @@
+import binascii
 import pybase64
 import tkinter as tk
 
@@ -148,8 +149,12 @@ class MainApp(tk.Tk):
         if self.mode.get() == 'Encode':
             self.output_window.insert('end', encode_message(key, message))
         elif self.mode.get() == 'Decode':
-            self.output_window.insert('end', decode_message(key, message))
-
+            try:
+                self.output_window.insert('end', decode_message(key, message))
+            except binascii.Error:
+                self.output_window.insert(
+                    'end', 'Error 001: Incorrect padding'
+                    )
 
 if __name__ == "__main__":
     app = MainApp()
