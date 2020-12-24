@@ -156,6 +156,7 @@ class MainApp(tk.Tk):
                     'end', 'Error 001: Incorrect padding'
                     )
 
+
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()
