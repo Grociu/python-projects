@@ -8,6 +8,9 @@ def encode_message(key, message):
 
     keycoded = []
 
+    if not key:
+        key = chr(0)
+
     # iterating through the message
     for i in range(len(message)):
         # assigning a key_character based on the given key
@@ -35,6 +38,9 @@ def decode_message(key, message):
 
     # retreive original message using the key
     dekeyed = []
+
+    if not key:
+        key = chr(0)
 
     # iterating through the message
     for i in range(len(decoded_but_keyed)):
