@@ -135,7 +135,20 @@ class MainApp(tk.Tk):
         """
         Executes the encoding/decoding process with a given message and key.
         """
-        pass
+        # Grab the key:
+        key = self.input_key_field.get()
+
+        # Grab the message:
+        message = self.message_input_field.get()
+
+        # Clear the output field:
+        self.output_window.delete('1.0', 'end')
+
+        # Update the output field
+        if self.mode.get() == 'Encode':
+            self.output_window.insert('end', encode_message(key, message))
+        elif self.mode.get() == 'Decode':
+            self.output_window.insert('end', decode_message(key, message))
 
 
 if __name__ == "__main__":
