@@ -1,4 +1,5 @@
 import pygame
+from pygame import Rect
 import random
 
 
@@ -35,7 +36,7 @@ class Target(object):
         self.x = x
         self.y = y
         self.size = size
-        self.hitbox = pygame.Rect(x - size, y - size, 2*size, 2*size)
+        self.hitbox = Rect(x - size, y - size, 2*size, 2*size)
 
     def draw(self, window):
         """
@@ -46,49 +47,73 @@ class Target(object):
         pygame.draw.rect(window, (255, 0, 0), self.hitbox, 2)
 
 
+def draw_all_elements(window):
+    """
+    Draws the elements in the game window, and all it's elements
+    """
+    global targets
+
+    # Clear the Background
+    window.fill((0, 0, 0))
+    # Draw the Targets
+    for target in targets:
+        target.draw(window)
+    # Draw the Crosshairs
+    mouse_position = pygame.mouse.get_pos()
+    pygame.draw.rect(
+        window, (0, 255, 0),
+        (mouse_position[0]-5, mouse_position[1], 11, 1)
+    )
+    pygame.draw.rect(
+        window, (0, 255, 0),
+        (mouse_position[0], mouse_position[1]-5, 1, 11)
+    )
+
+
 # Define Game Objects
 targets = []
 
+
 # Main Game Loop
-run = True
+def main():
+    pygame.mouse.set_visible(False)
+    run = True
 
-while run:
-    clock.tick(60)  # This controls the frame rate
+    while run:
+        clock.tick(60)  # This controls the frame rate
 
-    # EVENTS
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        # EVENTS
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+        # Keyboard Shortcuts
+        keys = pygame.key.get_pressed()
+
+        # Q - Quit
+        if keys[pygame.K_q]:
             run = False
 
-    # Keyboard Shortcuts
-    keys = pygame.key.get_pressed()
-
-    # Q - Quit
-    if keys[pygame.K_q]:
-        run = False
-
-    # S - Spawn a target
-    if keys[pygame.K_s]:
-        targets.append(
-            Target(
-                random.randint(
-                    MAX_TARGET_SIZE, SCREEN_DIMENSIONS[0] - MAX_TARGET_SIZE
-                ),
-                random.randint(
-                    MAX_TARGET_SIZE, SCREEN_DIMENSIONS[1] - MAX_TARGET_SIZE
-                ),
-                MAX_TARGET_SIZE
+        # S - Spawn a target
+        if keys[pygame.K_s]:
+            targets.append(
+                Target(
+                    random.randint(
+                        MAX_TARGET_SIZE, SCREEN_DIMENSIONS[0] - MAX_TARGET_SIZE
+                    ),
+                    random.randint(
+                        MAX_TARGET_SIZE, SCREEN_DIMENSIONS[1] - MAX_TARGET_SIZE
+                    ),
+                    MAX_TARGET_SIZE
+                )
             )
-        )
 
-    # Draw the Target
-    for target in targets:
-        target.draw(game_window)
+        # Draw the Game Window and Update
+        draw_all_elements(game_window)
+        pygame.display.update()
 
-    pygame.display.update()
-
-pygame.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":
-    pass
+    main()
