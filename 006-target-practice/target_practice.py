@@ -42,14 +42,31 @@ class Target(object):
         """
         Draws the target on a Surface window.
 
-        It's represented by a red square, without filling
+        It's represented by a red square, without filling with 2 black squares
+        on top of it, so it forms a targetting bracket of 4 corners.
         """
         pygame.draw.rect(window, (255, 0, 0), self.hitbox, 2)
+        cut = self.hitbox[2]//8  # this defines the size of the corners
+        pygame.draw.rect(window, (0, 0, 0), (
+            self.hitbox[0] + cut,
+            self.hitbox[1],
+            self.hitbox[2] - 2*cut,
+            self.hitbox[3] + 1
+            )
+        )
+        pygame.draw.rect(window, (0, 0, 0), (
+            self.hitbox[0],
+            self.hitbox[1] + cut,
+            self.hitbox[2] + 1,
+            self.hitbox[3] - 2*cut
+            )
+        )
 
 
 def draw_all_elements(window):
     """
-    Draws the elements in the game window, and all it's elements
+    Clears the screen an
+    Draws the elements in the game window
     """
     global targets
 
@@ -58,7 +75,14 @@ def draw_all_elements(window):
     # Draw the Targets
     for target in targets:
         target.draw(window)
-    # Draw the Crosshairs
+    # Draw the crosshair
+    draw_crosshair(window)
+
+
+def draw_crosshair(window):
+    """
+    Draws the crosshair at cursor position in Surface window
+    """
     mouse_position = pygame.mouse.get_pos()
     pygame.draw.rect(
         window, (0, 255, 0),
