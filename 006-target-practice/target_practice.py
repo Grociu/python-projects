@@ -3,20 +3,66 @@ from pygame import Rect
 import random
 
 
-# Initialize the pygame module
-pygame.init()
-
 # Global Variables
 SCREEN_DIMENSIONS = (800, 600)
 MAX_TARGET_SIZE = 50
 
-# Create the Game Window
-game_window = pygame.display.set_mode(SCREEN_DIMENSIONS)
-pygame.display.set_caption("Target Practice")
-clock = pygame.time.Clock()
-
 
 # Used classes
+class TargetPractice(object):
+    """
+    Main Application class that stores the game attributes.
+
+    Attributes:
+    game_window - pygame.display - main game window.
+    clock - pygame.time.Clock() - controls time things
+    targets lst[Target] - current targets
+
+    Methods:
+    draw_crosshair() - draws the crosshair at the cursor position
+    clear_screen() - clears screen and
+    draw_all_elements() - draws all game_window elements
+    """
+    def __init__(self):
+        pygame.init()
+        pygame.display.set_caption("Target Practice")
+        self.game_window = pygame.display.set_mode(SCREEN_DIMENSIONS)
+        self.clock = pygame.time.Clock()
+        self.targets = []
+
+    def draw_crosshair(self):
+        """
+        Draws the crosshair at cursor position on the 'game_window'.
+        """
+        mouse_position = pygame.mouse.get_pos()
+        pygame.draw.rect(
+            self.game_window, (0, 255, 0),
+            (mouse_position[0]-5, mouse_position[1], 11, 1)
+        )
+        pygame.draw.rect(
+            self.game_window, (0, 255, 0),
+            (mouse_position[0], mouse_position[1]-5, 1, 11)
+        )
+
+    def clear_screen(self):
+        """
+        Clears the 'game_window' screen to just a black background.
+        """
+        self.game_window.fill((0, 0, 0))
+
+    def draw_all_elements(self):
+        """
+        Clears the screen and draws the elements in the 'game_window'
+        """
+        # Clear the Background
+        self.clear_screen()
+        # Draw the Targets
+        for target in self.targets:
+            target.draw(self.game_window)
+        # Draw the crosshair
+        self.draw_crosshair()
+
+
 class Target(object):
     """
     Representation of a shooting target.
@@ -63,48 +109,14 @@ class Target(object):
         )
 
 
-def draw_all_elements(window):
-    """
-    Clears the screen an
-    Draws the elements in the game window
-    """
-    global targets
-
-    # Clear the Background
-    window.fill((0, 0, 0))
-    # Draw the Targets
-    for target in targets:
-        target.draw(window)
-    # Draw the crosshair
-    draw_crosshair(window)
-
-
-def draw_crosshair(window):
-    """
-    Draws the crosshair at cursor position in Surface window
-    """
-    mouse_position = pygame.mouse.get_pos()
-    pygame.draw.rect(
-        window, (0, 255, 0),
-        (mouse_position[0]-5, mouse_position[1], 11, 1)
-    )
-    pygame.draw.rect(
-        window, (0, 255, 0),
-        (mouse_position[0], mouse_position[1]-5, 1, 11)
-    )
-
-
-# Define Game Objects
-targets = []
-
-
 # Main Game Loop
 def main():
+    app = TargetPractice()
     pygame.mouse.set_visible(False)
     run = True
 
     while run:
-        clock.tick(60)  # This controls the frame rate
+        app.clock.tick(60)  # This controls the frame rate
 
         # EVENTS
         for event in pygame.event.get():
@@ -120,7 +132,7 @@ def main():
 
         # S - Spawn a target
         if keys[pygame.K_s]:
-            targets.append(
+            app.targets.append(
                 Target(
                     random.randint(
                         MAX_TARGET_SIZE, SCREEN_DIMENSIONS[0] - MAX_TARGET_SIZE
@@ -133,7 +145,7 @@ def main():
             )
 
         # Draw the Game Window and Update
-        draw_all_elements(game_window)
+        app.draw_all_elements()
         pygame.display.update()
 
     pygame.quit()
