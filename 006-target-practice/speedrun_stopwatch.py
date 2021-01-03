@@ -17,6 +17,11 @@ Milestone    Total.t      PB        Delta      (Hidden Attributes)
   Total:   Final.Time  Final.PB  Best Possible (sum of PB)
 
 """
+import os
+
+
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 # This is an entry from the database of entries, each represented by a list of
 # the same length
 # Each number represents a time in ms, that a stage has started/ended at
@@ -71,14 +76,28 @@ class Stage(object):
 
 
 class SpeedrunTimer(object):
-    def __init__(self, number_of_stages: int, database: str):
-        self.database = database
+    def __init__(self, number_of_stages: int, database_file: str):
+        self.database_file = database_file
+        self.past_runs = []
         self.stages = [Stage(index) for index in range(number_of_stages)]
+        self.read_database()
 
     def read_database(self):
         """ Reads past games database and updates the PBs """
-        pass
+        try:
+            self.past_runs.clear()
+            file = open(f"{CURRENT_DIR}/{self.database_file}", "r")
+            for line in file.readlines():
+                self.past_runs.append(
+                    [int(time) for time in line.split()]
+                )
+        except OSError:
+            print("Read Error, Database not loaded")
+            print("Creating empty database file: speedrun.txt")
+            open(f"{CURRENT_DIR}/speedrun.txt", "w").close()
+            self.database = "speedrun.txt"
 
     def clear_database(self):
         """ Clears past game database """
-        pass
+        open(f"{CURRENT_DIR}/{self.database_file}", "w").close()
+        self.read_database()
