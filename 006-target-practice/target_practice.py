@@ -19,6 +19,8 @@ class TargetPractice(object):
     targets lst[Target] - current targets
     current_size - targets gets smaller as game progresses
     run - bool - while true, the game runs
+    timer - int - handles the time since start of game
+    font - pygame.font.SysFont - font used in the game
 
     Methods:
     spawn_target() - adds a Target object to self.targets
@@ -35,6 +37,9 @@ class TargetPractice(object):
         self.targets = []
         self.current_size = MAX_TARGET_SIZE
         self.run = True
+        self.timer = 0
+        self.font = pygame.font.SysFont("Arial", 30, True, True)
+
         self.spawn_target()
 
     def spawn_target(self):
@@ -87,12 +92,21 @@ class TargetPractice(object):
         """
         self.game_window.fill((0, 0, 0))
 
+    def draw_timer(self, x: int, y: int):
+        """
+        Draws the current timer at coordinates (x, y)
+        """
+        text = self.font.render(f"{self.timer/100:.2f}", 1, (0, 0, 255))
+        self.game_window.blit(text, (x, y))
+
     def draw_all_elements(self):
         """
         Clears the screen and draws the elements in the 'game_window'
         """
         # Clear the Background
         self.clear_screen()
+        # Draw timer
+        self.draw_timer(700, 10)
         # Draw the Targets
         for target in self.targets:
             target.draw(self.game_window)
@@ -121,7 +135,7 @@ class Target(object):
         self.size = size
         self.hitbox = Rect(x - size, y - size, 2*size, 2*size)
 
-    def draw(self, window):
+    def draw(self, window: pygame.Surface):
         """
         Draws the target on a Surface window.
 
@@ -150,15 +164,16 @@ class Target(object):
 def main():
     app = TargetPractice()
     pygame.mouse.set_visible(False)
+    app.timer = 0
 
     while app.run:
         app.clock.tick(60)  # This controls the frame rate
-
+        app.timer += app.clock.get_rawtime()
         # EVENTS
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 app.run = False
-
+            # LMB - Shoot
             if (
                 event.type == pygame.MOUSEBUTTONDOWN and
                 pygame.mouse.get_pressed(3)[0]
