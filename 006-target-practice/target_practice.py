@@ -17,8 +17,12 @@ class TargetPractice(object):
     game_window - pygame.display - main game window.
     clock - pygame.time.Clock() - controls time things
     targets lst[Target] - current targets
+    current_size - targets gets smaller as game progresses
+    run - bool - while true, the game runs
 
     Methods:
+    spawn_target() - adds a Target object to self.targets
+    shoot() - shoots at cursor position, returns targets hit
     draw_crosshair() - draws the crosshair at the cursor position
     clear_screen() - clears screen and
     draw_all_elements() - draws all game_window elements
@@ -29,6 +33,39 @@ class TargetPractice(object):
         self.game_window = pygame.display.set_mode(SCREEN_DIMENSIONS)
         self.clock = pygame.time.Clock()
         self.targets = []
+        self.current_size = MAX_TARGET_SIZE
+        self.run = True
+        self.spawn_target()
+
+    def spawn_target(self):
+        """
+        Spawns a Target object in the game_window.
+        """
+        self.targets.append(
+            Target(
+                random.randint(
+                    self.current_size, SCREEN_DIMENSIONS[0] - self.current_size
+                ),
+                random.randint(
+                    self.current_size, SCREEN_DIMENSIONS[1] - self.current_size
+                ),
+                self.current_size
+            )
+        )
+
+    def shoot(self):
+        mouse_position = pygame.mouse.get_pos()
+        for target in self.targets:
+            if target.hitbox.collidepoint(mouse_position):
+                print(f"HIT! Target size was {target.size}")
+                self.targets.remove(target)
+
+                if self.current_size > 40:
+                    self.current_size -= 1
+                    self.spawn_target()
+                else:
+                    print("Victory!")
+                    self.run = False
 
     def draw_crosshair(self):
         """
@@ -113,36 +150,31 @@ class Target(object):
 def main():
     app = TargetPractice()
     pygame.mouse.set_visible(False)
-    run = True
 
-    while run:
+    while app.run:
         app.clock.tick(60)  # This controls the frame rate
 
         # EVENTS
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                app.run = False
+
+            if (
+                event.type == pygame.MOUSEBUTTONDOWN and
+                pygame.mouse.get_pressed(3)[0]
+            ):
+                app.shoot()
 
         # Keyboard Shortcuts
         keys = pygame.key.get_pressed()
 
         # Q - Quit
         if keys[pygame.K_q]:
-            run = False
+            app.run = False
 
         # S - Spawn a target
         if keys[pygame.K_s]:
-            app.targets.append(
-                Target(
-                    random.randint(
-                        MAX_TARGET_SIZE, SCREEN_DIMENSIONS[0] - MAX_TARGET_SIZE
-                    ),
-                    random.randint(
-                        MAX_TARGET_SIZE, SCREEN_DIMENSIONS[1] - MAX_TARGET_SIZE
-                    ),
-                    MAX_TARGET_SIZE
-                )
-            )
+            app.spawn_target()
 
         # Draw the Game Window and Update
         app.draw_all_elements()
