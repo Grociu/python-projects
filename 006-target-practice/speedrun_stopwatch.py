@@ -56,7 +56,7 @@ class Stage(object):
 
     Attributes:
     rank (int) - position of the Stage in SpeedrunTimer
-    active (bool) - Is this a currently active stage
+    active (-1, 0, 1) - 0 not active, 1 active, -1 finished
     start_time (int) - time in ms when the Stage began
     end_time (int) - time in ms when the Stage ended
     interval (int) - time it took to complete the stage
@@ -70,7 +70,7 @@ class Stage(object):
     """
     def __init__(self, rank: int):
         self.rank = rank
-        self.active = False
+        self.active = 0
         self.start_time = 0
         self.end_time = 0
         self.interval = 0
@@ -80,12 +80,12 @@ class Stage(object):
 
     def start_stage(self, time: int):
         """ Starts the current stage and updates attributes """
-        self.active = True
+        self.active = 1
         self.start_time = time
 
     def end_stage(self, time: int):
         """ Ends the current stage and updates attributes """
-        self.active = True
+        self.active = -1
         self.end_time = time
         self.interval = self.end_time - self.start_time
         if self.stage_pb:
@@ -98,7 +98,7 @@ class SpeedrunTimer(object):
     def __init__(self, number_of_stages: int, database_file: str):
         self.database_file = database_file
         self.past_runs = []
-        self.pb_run = False
+        self.pb_run = []
         self.stages = [Stage(index) for index in range(number_of_stages)]
         self.read_database()
 
