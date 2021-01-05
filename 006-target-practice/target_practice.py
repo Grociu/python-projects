@@ -37,15 +37,15 @@ class TargetPractice(object):
         self.clock = pygame.time.Clock()
         self.speedrun_timer = ss.SpeedrunTimer(10, "past_runs.txt")
         self.targets = []
-        self.stage = 1
+        self.stage = 0  # start at 0
         self.stage_shots = 0
         self.current_size = MAX_TARGET_SIZE
         self.run = True
         self.timer = 0
         self.main_font = pygame.font.SysFont("Arial", 30, True, True)
-        self.secondary_font = pygame.font.SysFont("Arial", 12, True, True)
+        self.timer_font = pygame.font.SysFont("Arial", 12, True, True)
         self.spawn_target()
-        self.speedrun_timer.stages[0].start_stage(self.timer)
+        self.speedrun_timer.start_run()
 
     def spawn_target(self):
         """
@@ -74,77 +74,25 @@ class TargetPractice(object):
                 if self.stage_shots < 3:
                     self.spawn_target()
                 else:
-                    self.speedrun_timer.stages[self.stage-1].end_stage(self.timer)
+                    self.speedrun_timer.end_stage_timer(self.stage, self.timer)
                     self.stage += 1
                     self.stage_shots = 0
-                    if self.stage < 11:
-                        self.speedrun_timer.stages[self.stage-1].start_stage(self.timer)
+                    if self.stage < 10:
+                        self.speedrun_timer.start_stage_timer(
+                            self.stage, self.timer
+                            )
                         self.current_size -= 5
                         self.spawn_target()
                     else:
-                        self.speedrun_timer.complete_a_run(
-                            [0] + [stage.end_time for stage in self.speedrun_timer.stages]
-                        )
+                        self.speedrun_timer.end_run()
                         print("Victory!")
                         self.run = False
 
     def draw_speedrun_timer(self, x: int, y: int):
-        current_x = x
-        current_y = y
-        # Draw each stage of the game
-        for stage in self.speedrun_timer.stages:
-            # This is not the first run - we have past data
-            if self.speedrun_timer.pb_run:
-                # The stage is active
-                if stage.active == 1:  
-                    text = self.secondary_font.render(
-                        f"{self.timer/100:.2f}  "
-                        f"{self.speedrun_timer.pb_run.data[stage.rank+1]/100:.2f}  "
-                        f"--.--",  # Placeholder
-                        1, (0, 0, 255)
-                    )
-                # This stage has finished
-                elif stage.active == -1: 
-                    text = self.secondary_font.render(
-                        f"{stage.end_time/100:.2f}  "
-                        f"{self.speedrun_timer.pb_run.data[stage.rank+1]/100:.2f}  "
-                        f"{(stage.end_time - self.speedrun_timer.pb_run.data[stage.rank+1])/100:.2f}",
-                        1, (0, 0, 255)
-                    )
-                # This stage was not active yet
-                else:
-                    text = self.secondary_font.render(
-                        f"--.--  "
-                        f"{self.speedrun_timer.pb_run.data[stage.rank+1]/100:.2f}  "
-                        f"--.--",
-                        1, (0, 0, 255)
-                    )
-            # This is for the first run - no past data
-            else:
-                if stage.active == 1:
-                    text = self.secondary_font.render(
-                        f"{self.timer/100:.2f}  "
-                        f"--.--  "
-                        f"--.--",
-                        1, (0, 0, 255)
-                    )
-                elif stage.active == -1:
-                    text = self.secondary_font.render(
-                        f"{stage.end_time/100:.2f}  "
-                        f"{stage.end_time/100:.2f}  "
-                        f"--.--",
-                        1, (0, 0, 255)
-                    )
-                else:
-                    text = self.secondary_font.render(
-                        f"--.--  "
-                        f"--.--  "
-                        f"--.--",
-                        1, (0, 0, 255)
-                    )
-            self.game_window.blit(text, (current_x, current_y))
-            current_y += 15
-
+        self.speedrun_timer.draw_timers(
+            self.game_window, x, y, self.timer, self.timer_font
+        )
+    
     def draw_crosshair(self):
         """
         Draws the crosshair at cursor position on the 'game_window'.

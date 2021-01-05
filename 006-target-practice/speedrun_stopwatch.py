@@ -18,6 +18,7 @@ Milestone    Total.t      PB        Delta      (Hidden Attributes)
 
 """
 import os
+import pygame
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -147,7 +148,9 @@ class SpeedrunTimer(object):
                 run.intervals[stage.rank] for run in self.past_runs
             )
 
-    def complete_a_run(self, run_data: list[int]):
+    def complete_a_run(self, run_data: list[int] = None):
+        if run_data is None:
+            run_data = [0] + [stage.end_time for stage in self.stages]
         self.add_to_database(run_data)
         self.past_runs.append(PastRun(run_data))
         self.update_pb()
@@ -163,3 +166,87 @@ class SpeedrunTimer(object):
             print(f"Intervals: {self.pb_run.intervals}")
         for stage in self.stages:
             print(f"Stage {stage.rank} PB: {stage.stage_pb}")
+
+    def start_stage_timer(self, stage, time):
+        self.stages[stage].start_stage(time)
+
+    def end_stage_timer(self, stage, time):
+        self.stages[stage].end_stage(time)
+
+    def start_run(self):
+        self.start_stage_timer(0, 0)
+
+    def end_run(self):
+        self.complete_a_run()
+
+    def draw_timers(
+        self, window: pygame.Surface, x: int, y: int, timer: int,
+        font: pygame.font = None,
+    ):
+        """
+        This method draws all the timers on a pygame Surface.txt
+
+        Arguments:
+        window: pygame.Surface - the Surface that the timers will be drawn on
+        x: int - x coordinate on the Surface (top left corner of the timers)
+        y: int - y coordinate on the Surface (top left corner of the timers)
+        timer: int - time in ms since start of the entire game
+        """
+        if font is None:
+            pygame.font.init()
+            font = pygame.font.SysFont("Arial", 12, True, True)
+        current_x = x
+        current_y = y
+        # Draw a set of timers for each stage of the game
+        for stage in self.stages:
+            # This is not the first run - we have past data
+            if self.pb_run:
+                # The stage is currently active
+                if stage.active == 1:
+                    text = font.render(
+                        f"{timer/100:06.2f} " # 000.00 format
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
+                        f"---.--",
+                        1, (0, 0, 255)
+                    )
+                # This stage has finished
+                elif stage.active == -1:
+                    text = font.render(
+                        f"{stage.end_time/100:06.2f}  "
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
+                        f"{(stage.end_time - self.pb_run.data[stage.rank+1])/100:+06.2f}",
+                        1, (0, 0, 255)
+                    )
+                # This stage was not active yet
+                else:
+                    text = font.render(
+                        f"---.--  "
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
+                        f"---.--",
+                        1, (0, 0, 255)
+                    )
+            # This is for the first run - no past data
+            else:
+                if stage.active == 1:
+                    text = font.render(
+                        f"{timer/100:06.2f}  "
+                        f"---.--  "
+                        f"---.--",
+                        1, (0, 0, 255)
+                    )
+                elif stage.active == -1:
+                    text = self.secondary_font.render(
+                        f"{stage.end_time/100:06.2f}  "
+                        f"{stage.end_time/100:06.2f}  "
+                        f"---.--",
+                        1, (0, 0, 255)
+                    )
+                else:
+                    text = font.render(
+                        "---.--  "
+                        "---.--  "
+                        "---.--",
+                        1, (0, 0, 255)
+                    )
+            window.blit(text, (current_x, current_y))
+            current_y += 16
