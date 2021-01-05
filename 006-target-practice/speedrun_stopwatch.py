@@ -19,6 +19,7 @@ Milestone    Total.t      PB        Delta      (Hidden Attributes)
 """
 import os
 import pygame
+from typing import Tuple
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -182,6 +183,7 @@ class SpeedrunTimer(object):
     def draw_timers(
         self, window: pygame.Surface, x: int, y: int, timer: int,
         font: pygame.font = None,
+        color: Tuple[int, int, int] = (255, 255, 0)  # yellow
     ):
         """
         This method draws all the timers on a pygame Surface.txt
@@ -197,57 +199,66 @@ class SpeedrunTimer(object):
             font = pygame.font.SysFont("Arial", 12, True, True)
         current_x = x
         current_y = y
+        no_data = font.render("---.--", 1, color)
         # Draw a set of timers for each stage of the game
         for stage in self.stages:
             # This is not the first run - we have past data
             if self.pb_run:
                 # The stage is currently active
                 if stage.active == 1:
-                    text = font.render(
-                        f"{timer/100:06.2f} "  # 000.00 format
-                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
-                        f"---.--",
-                        1, (0, 0, 255)
+                    text1 = font.render(
+                        f"{timer/100:06.2f}", 1, color  # 000.00 format
                     )
+                    text2 = font.render(
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}", 1, color
+                    )
+                    text3 = no_data
                 # This stage has finished
                 elif stage.active == -1:
-                    end = stage.end_time - self.pb_run.data[stage.rank+1]
-                    text = font.render(
-                        f"{stage.end_time/100:06.2f}  "
-                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
-                        f"{end/100:+06.2f}",
-                        1, (0, 0, 255)
+                    text1 = font.render(
+                        f"{stage.end_time/100:06.2f}", 1, color
                     )
+                    text2 = font.render(
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}", 1, color
+                    )
+                    # Delta to the PB, colorcoded green/red
+                    end = stage.end_time - self.pb_run.data[stage.rank+1]
+                    if end >= 0:
+                        text3 = font.render(
+                            f"{end/100:+06.2f}", 1, (255, 0, 0)
+                        )
+                    else:
+                        text3 = font.render(
+                            f"{end/100:+06.2f}", 1, (0, 255, 0)
+                        )
                 # This stage was not active yet
                 else:
-                    text = font.render(
-                        f"---.--  "
-                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
-                        f"---.--",
-                        1, (0, 0, 255)
+                    text1 = no_data
+                    text2 = font.render(
+                        f"{self.pb_run.data[stage.rank+1]/100:06.2f}", 1, color
                     )
+                    text3 = no_data
             # This is for the first run - no past data
             else:
                 if stage.active == 1:
-                    text = font.render(
-                        f"{timer/100:06.2f}  "
-                        f"---.--  "
-                        f"---.--",
-                        1, (0, 0, 255)
+                    text1 = font.render(
+                        f"{timer/100:06.2f}", 1, color
                     )
+                    text2 = text3 = no_data
                 elif stage.active == -1:
-                    text = self.secondary_font.render(
-                        f"{stage.end_time/100:06.2f}  "
-                        f"{stage.end_time/100:06.2f}  "
-                        f"---.--",
-                        1, (0, 0, 255)
+                    text1 = font.render(
+                        f"{stage.end_time/100:06.2f}", 1, color
                     )
+                    text2 = text1
+                    text3 = no_data
                 else:
-                    text = font.render(
-                        "---.--  "
-                        "---.--  "
-                        "---.--",
-                        1, (0, 0, 255)
-                    )
-            window.blit(text, (current_x, current_y))
-            current_y += 16
+                    text1 = text2 = text3 = no_data
+            # Draw the texts - the positions are hardcoded atm, this should
+            # depend on the size of the font used
+            window.blit(text1, (current_x, current_y))
+            current_x += 50
+            window.blit(text2, (current_x, current_y))
+            current_x += 50
+            window.blit(text3, (current_x, current_y))
+            current_x -= 100
+            current_y += 20
