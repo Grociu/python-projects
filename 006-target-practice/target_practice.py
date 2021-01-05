@@ -92,7 +92,7 @@ class TargetPractice(object):
         self.speedrun_timer.draw_timers(
             self.game_window, x, y, self.timer, self.timer_font
         )
-    
+
     def draw_crosshair(self):
         """
         Draws the crosshair at cursor position on the 'game_window'.
@@ -135,6 +135,7 @@ class TargetPractice(object):
             # Draw the crosshair
             self.draw_crosshair()
             self.draw_speedrun_timer(10, 10)
+
 
 class Target(object):
     """

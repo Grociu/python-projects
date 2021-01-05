@@ -204,17 +204,18 @@ class SpeedrunTimer(object):
                 # The stage is currently active
                 if stage.active == 1:
                     text = font.render(
-                        f"{timer/100:06.2f} " # 000.00 format
+                        f"{timer/100:06.2f} "  # 000.00 format
                         f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
                         f"---.--",
                         1, (0, 0, 255)
                     )
                 # This stage has finished
                 elif stage.active == -1:
+                    end = stage.end_time - self.pb_run.data[stage.rank+1]
                     text = font.render(
                         f"{stage.end_time/100:06.2f}  "
                         f"{self.pb_run.data[stage.rank+1]/100:06.2f}  "
-                        f"{(stage.end_time - self.pb_run.data[stage.rank+1])/100:+06.2f}",
+                        f"{end/100:+06.2f}",
                         1, (0, 0, 255)
                     )
                 # This stage was not active yet
