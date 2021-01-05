@@ -90,7 +90,7 @@ class TargetPractice(object):
 
     def draw_speedrun_timer(self, x: int, y: int):
         self.speedrun_timer.draw_timers(
-            self.game_window, x, y, self.timer, self.timer_font
+            self.game_window, x, y, self.timer, "short", self.timer_font
         )
 
     def draw_crosshair(self):

@@ -64,7 +64,6 @@ class Stage(object):
     interval (int) - time it took to complete the stage
     stage_pb (int) - personal best taken from the database
     delta (int) - the difference between current time and pb
-    beats_stage_pb (bool) - does this try beat the personal best
 
     Methods:
     start_stage(time) - starts the Stage at time
@@ -78,7 +77,6 @@ class Stage(object):
         self.interval = 0
         self.stage_pb = 0
         self.delta = 0
-        self.beats_stage_pb = False
 
     def start_stage(self, time: int):
         """ Starts the current stage and updates attributes """
@@ -92,8 +90,6 @@ class Stage(object):
         self.interval = self.end_time - self.start_time
         if self.stage_pb:
             self.delta = self.interval - self.stage_pb
-            if self.delta < 0:
-                self.beats_stage_pb = True
 
 
 class SpeedrunTimer(object):
@@ -182,6 +178,7 @@ class SpeedrunTimer(object):
 
     def draw_timers(
         self, window: pygame.Surface, x: int, y: int, timer: int,
+        mode: str = "short",
         font: pygame.font = None,
         color: Tuple[int, int, int] = (255, 255, 0)  # yellow
     ):
@@ -193,6 +190,10 @@ class SpeedrunTimer(object):
         x: int - x coordinate on the Surface (top left corner of the timers)
         y: int - y coordinate on the Surface (top left corner of the timers)
         timer: int - time in ms since start of the entire game
+        mode: str - "short" displays 3  basic timers,
+                    "long" displays all 6 timers,
+        font: pygame.font.SysFont - font used to draw the timers
+        color: 3-tuple(int) - RGB trio that most of the timers will be drawn
         """
         if font is None:
             pygame.font.init()
@@ -213,6 +214,14 @@ class SpeedrunTimer(object):
                         f"{self.pb_run.data[stage.rank+1]/100:06.2f}", 1, color
                     )
                     text3 = no_data
+                    if mode == "long":
+                        text4 = font.render(
+                            f"{(timer -stage.start_time)/100:06.2f}", 1, color
+                        )
+                        text5 = font.render(
+                            f"{stage.stage_pb/100:06.2f}",  1, color
+                        )
+                        text6 = no_data
                 # This stage has finished
                 elif stage.active == -1:
                     text1 = font.render(
@@ -231,6 +240,21 @@ class SpeedrunTimer(object):
                         text3 = font.render(
                             f"{end/100:+06.2f}", 1, (0, 255, 0)
                         )
+                    if mode == "long":
+                        text4 = font.render(
+                            f"{stage.interval/100:06.2f}", 1, color
+                        )
+                        text5 = font.render(
+                            f"{stage.stage_pb/100:06.2f}", 1, color
+                        )
+                        if stage.delta >= 0:
+                            text6 = font.render(
+                                f"{stage.delta/100:+06.2f}", 1, (255, 0, 0)
+                            )
+                        else:
+                            text6 = font.render(
+                                f"{stage.delta/100:+06.2f}", 1, (0, 255, 0)
+                            )
                 # This stage was not active yet
                 else:
                     text1 = no_data
@@ -238,6 +262,11 @@ class SpeedrunTimer(object):
                         f"{self.pb_run.data[stage.rank+1]/100:06.2f}", 1, color
                     )
                     text3 = no_data
+                    if mode == "long":
+                        text4 = text6 = no_data
+                        text5 = font.render(
+                            f"{stage.stage_pb/100:06.2f}", 1, color
+                        )
             # This is for the first run - no past data
             else:
                 if stage.active == 1:
@@ -245,14 +274,26 @@ class SpeedrunTimer(object):
                         f"{timer/100:06.2f}", 1, color
                     )
                     text2 = text3 = no_data
+                    if mode == "long":
+                        text4 = font.render(
+                            f"{(timer -stage.start_time)/100:06.2f}", 1, color
+                        )
+                        text5 = text6 = no_data
                 elif stage.active == -1:
                     text1 = font.render(
                         f"{stage.end_time/100:06.2f}", 1, color
                     )
                     text2 = text1
                     text3 = no_data
+                    if mode == "long":
+                        text4 = text5 = font.render(
+                            f"{stage.interval/100:06.2f}", 1, color
+                        )
+                        text6 = no_data
                 else:
                     text1 = text2 = text3 = no_data
+                    if mode == "long":
+                        text4 = text5 = text6 = no_data
             # Draw the texts - the positions are hardcoded atm, this should
             # depend on the size of the font used
             window.blit(text1, (current_x, current_y))
@@ -260,5 +301,13 @@ class SpeedrunTimer(object):
             window.blit(text2, (current_x, current_y))
             current_x += 50
             window.blit(text3, (current_x, current_y))
+            if mode == "long":
+                current_x += 70
+                window.blit(text4, (current_x, current_y))
+                current_x += 50
+                window.blit(text5, (current_x, current_y))
+                current_x += 50
+                window.blit(text6, (current_x, current_y))
+                current_x -= 170
             current_x -= 100
             current_y += 20
