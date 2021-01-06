@@ -77,6 +77,7 @@ class Stage(object):
         self.interval = 0
         self.stage_pb = 0
         self.delta = 0
+        self.name = f"Stage {rank+1}"
 
     def start_stage(self, time: int):
         """ Starts the current stage and updates attributes """
@@ -90,6 +91,9 @@ class Stage(object):
         self.interval = self.end_time - self.start_time
         if self.stage_pb:
             self.delta = self.interval - self.stage_pb
+
+    def set_name(self, name: str):
+        self.name = name
 
 
 class SpeedrunTimer(object):
@@ -176,6 +180,10 @@ class SpeedrunTimer(object):
     def end_run(self):
         self.complete_a_run()
 
+    def define_stage_names(self, names: list[str]):
+        for stage, name in zip(self.stages, names):
+            stage.set_name(name)
+
     def draw_timers(
         self, window: pygame.Surface, x: int, y: int, timer: int,
         mode: str = "short",
@@ -216,7 +224,7 @@ class SpeedrunTimer(object):
                     text3 = no_data
                     if mode == "long":
                         text4 = font.render(
-                            f"{(timer -stage.start_time)/100:06.2f}", 1, color
+                            f"{(timer - stage.start_time)/100:06.2f}", 1, color
                         )
                         text5 = font.render(
                             f"{stage.stage_pb/100:06.2f}",  1, color
@@ -296,18 +304,35 @@ class SpeedrunTimer(object):
                         text4 = text5 = text6 = no_data
             # Draw the texts - the positions are hardcoded atm, this should
             # depend on the size of the font used
+            text0 = font.render(f"{stage.name}:", 1, color)
+            window.blit(text0, (current_x, current_y))
+            current_x += 60
             window.blit(text1, (current_x, current_y))
-            current_x += 50
+            current_x += 45
             window.blit(text2, (current_x, current_y))
-            current_x += 50
+            current_x += 45
             window.blit(text3, (current_x, current_y))
             if mode == "long":
                 current_x += 70
                 window.blit(text4, (current_x, current_y))
-                current_x += 50
+                current_x += 45
                 window.blit(text5, (current_x, current_y))
-                current_x += 50
+                current_x += 45
                 window.blit(text6, (current_x, current_y))
-                current_x -= 170
-            current_x -= 100
+                current_x -= 160
+            current_x -= 150
             current_y += 20
+        # Draw the summary of timers
+        lines = font.render("-"*40, 1, color)
+        window.blit(lines, (current_x, current_y))
+        if self.pb_run:
+            current_y += 20
+            text0 = font.render("PB:", 1, color)
+            window.blit(text0, (current_x, current_y))
+            text1 = font.render(f"{self.pb_run.data[-1]/100:06.2f}", 1, color)
+            window.blit(text1, (current_x+60, current_y))
+            text2 = font.render("Possible:", 1, color)
+            window.blit(text2, (current_x, current_y+20))
+            sum_pb = sum([stage.stage_pb for stage in self.stages])
+            text3 = font.render(f"{sum_pb/100:06.2f}", 1, color)
+            window.blit(text3, (current_x+60, current_y+20))

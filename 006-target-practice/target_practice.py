@@ -5,7 +5,7 @@ import speedrun_stopwatch as ss
 
 
 # Global Variables
-SCREEN_DIMENSIONS = (800, 600)
+SCREEN_DIMENSIONS = (1200, 600)
 MAX_TARGET_SIZE = 50
 
 
@@ -44,7 +44,11 @@ class TargetPractice(object):
         self.timer = 0
         self.main_font = pygame.font.SysFont("Arial", 30, True, True)
         self.timer_font = pygame.font.SysFont("Arial", 12, True, True)
+        self.timer_area = 200
         self.spawn_target()
+        self.speedrun_timer.define_stage_names(
+            ["Size " + str(50-5*i) for i in range(10)]
+        )
         self.speedrun_timer.start_run()
 
     def spawn_target(self):
@@ -54,10 +58,12 @@ class TargetPractice(object):
         self.targets.append(
             Target(
                 random.randint(
-                    self.current_size, SCREEN_DIMENSIONS[0] - self.current_size
+                    self.current_size + self.timer_area,
+                    SCREEN_DIMENSIONS[0] - self.current_size
                 ),
                 random.randint(
-                    self.current_size, SCREEN_DIMENSIONS[1] - self.current_size
+                    self.current_size,
+                    SCREEN_DIMENSIONS[1] - self.current_size
                 ),
                 self.current_size
             )
@@ -120,6 +126,13 @@ class TargetPractice(object):
         text = self.main_font.render(f"{self.timer/100:.2f}", 1, (0, 0, 255))
         self.game_window.blit(text, (x, y))
 
+    def draw_divider(self):
+        pygame.draw.rect(
+            self.game_window,
+            (255, 255, 0),
+            (self.timer_area, 0, 2, SCREEN_DIMENSIONS[1])
+        )
+
     def draw_all_elements(self):
         """
         Clears the screen and draws the elements in the 'game_window'
@@ -128,13 +141,14 @@ class TargetPractice(object):
             # Clear the Background
             self.clear_screen()
             # Draw timer
-            self.draw_timer(700, 10)
+            self.draw_timer(70, SCREEN_DIMENSIONS[1] - 50)
             # Draw the Targets
             for target in self.targets:
                 target.draw(self.game_window)
             # Draw the crosshair
             self.draw_crosshair()
             self.draw_speedrun_timer(10, 10)
+            self.draw_divider()
 
 
 class Target(object):
