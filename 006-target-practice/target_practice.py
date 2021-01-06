@@ -44,7 +44,9 @@ class TargetPractice(object):
         pygame.display.set_caption("Target Practice")
         self.game_window = pygame.display.set_mode(SCREEN_DIMENSIONS)
         self.clock = pygame.time.Clock()
-        self.speedrun_timer = ss.SpeedrunTimer(10, "past_runs.txt")
+        self.speedrun_timer = ss.SpeedrunTimer(
+            10, "past_runs.txt", ["Size " + str(50-5*i) for i in range(10)]
+        )
         self.targets = []
         self.stage = 0  # start at 0
         self.stage_shots = 0
@@ -55,9 +57,6 @@ class TargetPractice(object):
         self.timer_font = pygame.font.SysFont("Arial", 12, True, True)
         self.timer_area = 200
         self.spawn_target()
-        self.speedrun_timer.define_stage_names(
-            ["Size " + str(50-5*i) for i in range(10)]
-        )
         self.speedrun_timer.start_run()
 
     def spawn_target(self):
