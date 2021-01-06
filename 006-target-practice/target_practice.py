@@ -15,19 +15,28 @@ class TargetPractice(object):
     Main Application class that stores the game attributes.
 
     Attributes:
-    game_window - pygame.display - main game window.
-    clock - pygame.time.Clock() - controls time things
-    targets lst[Target] - current targets
-    current_size - targets gets smaller as game progresses
-    run - bool - while true, the game runs
-    timer - int - handles the time since start of game
-    font - pygame.font.SysFont - font used in the game
+    game_window: pygame.Surface - main application window
+    clock: pygame.time.Clock() - pygame time control object
+    speedrun_timer: ss.SpeedrunTimer() - a module to control speedrun timers
+    targets: List[Target] - currently active targets
+    stage: int - current game stage - controls flow of the game
+    stage_shots: int - number of shoots  taken this stage
+    current_size: int - targets gets smaller as game progresses
+    run: bool - while true, the game runs
+    timer: int - represents time elapsed since start of game in ms
+    main_font: pygame.font.SysFont - font used for the main timer
+    timer_font: pygame.font.SysFont - font used for the speedrun timers
+    timer_area: int - delimiter for the timers and game area (x coord)
 
     Methods:
-    spawn_target() - adds a Target object to self.targets
-    shoot() - shoots at cursor position, returns targets hit
+    spawn_target() - adds a Target object placed on game area to self.targets
+    shoot() - shoots a bullet at cursor position, if hits a target executes
+              commands on hit (check the function)
+    draw_speedrun_timer(x, y): draws the speedrun timers at x, y (top left)
     draw_crosshair() - draws the crosshair at the cursor position
-    clear_screen() - clears screen and
+    clear_screen() - clears screen
+    draw_timer(x, y) - draws the main game timer
+    draw_divider() - draws a line dividing the timers from the game area
     draw_all_elements() - draws all game_window elements
     """
     def __init__(self):
@@ -53,7 +62,7 @@ class TargetPractice(object):
 
     def spawn_target(self):
         """
-        Spawns a Target object in the game_window.
+        Spawns a Target object in the game area of the game_window.
         """
         self.targets.append(
             Target(
@@ -70,31 +79,46 @@ class TargetPractice(object):
         )
 
     def shoot(self):
+        """
+        "Shoots" at the position of the cursor.
+
+        If a target is hit, it is replaced by a new target according to every
+        changing stage parameters - successive hits make the targets smaller,
+        and the game is divided into stages of 3 shots.
+
+        After each stage is finished, the self.speedrun_timer is called to
+        start/end it's stage timers. When the last stage is finished, the game
+        ends.
+        """
         mouse_position = pygame.mouse.get_pos()
         for target in self.targets:
+            # You shot the target
             if target.hitbox.collidepoint(mouse_position):
                 print(f"HIT! Target size was {target.size}")
                 self.targets.remove(target)
                 self.stage_shots += 1
 
-                if self.stage_shots < 3:
+                if self.stage_shots < 3:  # Stage did not end
                     self.spawn_target()
-                else:
+                else:  # Stage did end
                     self.speedrun_timer.end_stage_timer(self.stage, self.timer)
                     self.stage += 1
                     self.stage_shots = 0
-                    if self.stage < 10:
+                    if self.stage < 10:  # Game did not end
                         self.speedrun_timer.start_stage_timer(
                             self.stage, self.timer
                             )
                         self.current_size -= 5
                         self.spawn_target()
-                    else:
+                    else:  # Game did end
                         self.speedrun_timer.end_run()
                         print("Victory!")
                         self.run = False
 
     def draw_speedrun_timer(self, x: int, y: int):
+        """
+        Draws the speedrun timers in the game_window at (x, y)
+        """
         self.speedrun_timer.draw_timers(
             self.game_window, x, y, self.timer, "short", self.timer_font
         )
@@ -127,6 +151,9 @@ class TargetPractice(object):
         self.game_window.blit(text, (x, y))
 
     def draw_divider(self):
+        """
+        Draws a divider between timers and game area.
+        """
         pygame.draw.rect(
             self.game_window,
             (255, 255, 0),
@@ -135,7 +162,7 @@ class TargetPractice(object):
 
     def draw_all_elements(self):
         """
-        Clears the screen and draws the elements in the 'game_window'
+        Clears the screen and draws the elements in the 'game_window'.
         """
         if self.run:
             # Clear the Background
