@@ -195,6 +195,7 @@ class Stage(object):
             self.delta = self.interval - self.stage_pb
 
     def set_name(self, name: str):
+        """ Sets the name of the stage """
         self.name = name
 
 
@@ -285,6 +286,7 @@ class SpeedrunTimer(object):
         self.past_runs.append(PastRun(run_data))
 
     def reset_stages(self):
+        """ Resets the stages so they are ready for a new game """
         self.update_pb()
         self.stages = [
             Stage(index) for index in range(len(self.stages))
