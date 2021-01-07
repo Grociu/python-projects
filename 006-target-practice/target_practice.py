@@ -6,6 +6,7 @@ import speedrun_stopwatch as ss
 
 # Global Variables
 SCREEN_DIMENSIONS = (1200, 600)
+CENTER_OF_SCREEN = (SCREEN_DIMENSIONS[0]//2, SCREEN_DIMENSIONS[1]//2)
 MAX_TARGET_SIZE = 50
 
 
@@ -37,27 +38,33 @@ class TargetPractice(object):
     clear_screen() - clears screen
     draw_timer(x, y) - draws the main game timer
     draw_divider() - draws a line dividing the timers from the game area
-    draw_all_elements() - draws all game_window elements
+    draw_all_game_elements() - draws all game_window elements
     """
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Target Practice")
         self.game_window = pygame.display.set_mode(SCREEN_DIMENSIONS)
         self.clock = pygame.time.Clock()
+        # Game objects
+        self.uis = UISelectors(200, 40, 20)
         self.speedrun_timer = ss.SpeedrunTimer(
             10, "past_runs.txt", ["Size " + str(50-5*i) for i in range(10)]
         )
         self.targets = []
+        # Game control variables
         self.stage = 0  # start at 0
         self.stage_shots = 0
         self.current_size = MAX_TARGET_SIZE
+        # Logic flow control variables
         self.run = True
+        self.menu = True
+        self.game = False
+        self.results_screen = False
+        # Other variables
         self.timer = 0
         self.main_font = pygame.font.SysFont("Arial", 30, True, True)
         self.timer_font = pygame.font.SysFont("Arial", 12, True, True)
         self.timer_area = 200
-        self.spawn_target()
-        self.speedrun_timer.start_run()
 
     def spawn_target(self):
         """
@@ -93,7 +100,6 @@ class TargetPractice(object):
         for target in self.targets:
             # You shot the target
             if target.hitbox.collidepoint(mouse_position):
-                print(f"HIT! Target size was {target.size}")
                 self.targets.remove(target)
                 self.stage_shots += 1
 
@@ -111,8 +117,8 @@ class TargetPractice(object):
                         self.spawn_target()
                     else:  # Game did end
                         self.speedrun_timer.end_run()
-                        print("Victory!")
-                        self.run = False
+                        self.game = False
+                        self.results_screen = True
 
     def draw_speedrun_timer(self, x: int, y: int):
         """
@@ -159,11 +165,42 @@ class TargetPractice(object):
             (self.timer_area, 0, 2, SCREEN_DIMENSIONS[1])
         )
 
-    def draw_all_elements(self):
+    def draw_main_menu(self):
+        if self.run and self.menu:
+            self.uis.draw_main_menu(self.game_window)
+
+    def menu_select(self):
+        mouse_position = pygame.mouse.get_pos()
+        if self.uis.play_button.rectangle.collidepoint(mouse_position):
+            self.menu = False
+            self.game = True
+            self.timer = 0
+            self.targets.clear()
+            self.spawn_target()
+            self.speedrun_timer.start_run()
+
+        if self.uis.high_scores.rectangle.collidepoint(mouse_position):
+            self.menu = False
+            self.results_screen = True
+
+        if self.uis.quit_button.rectangle.collidepoint(mouse_position):
+            self.menu = False
+            self.run = False
+
+    def draw_back_button(self):
+        self.uis.draw_back_button(self.game_window)
+
+    def scores_select(self):
+        mouse_position = pygame.mouse.get_pos()
+        if self.uis.back_button.rectangle.collidepoint(mouse_position):
+            self.menu = True
+            self.results_screen = False
+
+    def draw_all_game_elements(self):
         """
         Clears the screen and draws the elements in the 'game_window'.
         """
-        if self.run:
+        if self.run and self.game:
             # Clear the Background
             self.clear_screen()
             # Draw timer
@@ -175,6 +212,76 @@ class TargetPractice(object):
             self.draw_crosshair()
             self.draw_speedrun_timer(10, 10)
             self.draw_divider()
+
+
+class Button(object):
+    def __init__(self, rectangle: Rect, text: str):
+        self.rectangle = rectangle
+        self.font = pygame.font.SysFont("Arial", 15, True, True)
+        self.text = self.font.render(text, 1, (255, 255, 0))
+
+    def draw_with_offset(self, window: pygame.Surface, offset: int):
+        """
+        Draws the button on the Surface window, with the text as offset from
+        the center of button (move text left)
+
+        offset negative - move text to the left
+        offset positive - move text to the right
+        """
+        pygame.draw.rect(window, (255, 0, 0), self.rectangle)
+        window.blit(self.text, (
+            self.rectangle.x + self.rectangle.width//2 + offset,
+            self.rectangle.y + self.rectangle.height//4
+            ))
+
+
+class UISelectors(object):
+    def __init__(
+        self, button_width: int, button_height: int, button_spacing: int
+    ):
+        # Class attributes
+        self.button_width = button_width  # 200
+        self.button_height = button_height  # 40
+        self.button_spacing = button_spacing  # 20
+        # Main Menu PLAY button
+        self.play_button = Button(self.button_above_screen_center(-2), "PLAY")
+        # Main Menu HIGH SCORES button
+        self.high_scores = Button(
+            self.button_above_screen_center(-1), "HIGH SCORES"
+        )
+        # Main Menu QUIT button
+        self.quit_button = Button(self.button_above_screen_center(0), "QUIT")
+        # High Scores MAIN MENU button
+        self.back_button = Button(
+            self.button_above_screen_center(3), "MAIN MENU"
+        )
+        # instructions = ?
+        # title = ?
+
+    def button_above_screen_center(self, elevation: int = 0) -> Rect:
+        """
+        Creates a button centered on the screen in relation to the screen
+        center. A unit of elevation is equal to button height plus spacing
+
+        elevation negative - above screen center
+        elevation positive - below screen center
+        """
+        return Rect(
+            CENTER_OF_SCREEN[0] - self.button_width//2,
+            CENTER_OF_SCREEN[1] + elevation * (
+                self.button_spacing + self.button_height
+            ),
+            self.button_width,
+            self.button_height
+        )
+
+    def draw_main_menu(self, window: pygame.Surface):
+        self.play_button.draw_with_offset(window, -20)
+        self.high_scores.draw_with_offset(window, -52)
+        self.quit_button.draw_with_offset(window, -20)
+
+    def draw_back_button(self, window: pygame.Surface):
+        self.back_button.draw_with_offset(window, -46)
 
 
 class Target(object):
@@ -229,35 +336,87 @@ def main():
     pygame.mouse.set_visible(False)
     app.timer = 0
 
+    # run is True
     while app.run:
-        app.clock.tick(60)  # This controls the frame rate
-        app.timer += app.clock.get_rawtime()
-        # EVENTS
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                app.run = False
-            # LMB - Shoot
-            if (
-                event.type == pygame.MOUSEBUTTONDOWN and
-                pygame.mouse.get_pressed(3)[0]
-            ):
-                app.shoot()
 
-        # Keyboard Shortcuts
+        app.clock.tick(60)
+
+        # Global Effects
         keys = pygame.key.get_pressed()
 
         # Q - Quit
         if keys[pygame.K_q]:
             app.run = False
+        # H - High Scores
+        if keys[pygame.K_h]:
+            app.menu = False
+            app.game = False
+            app.results_screen = True
+        # M - Menu
+        if keys[pygame.K_m]:
+            app.menu = True
+            app.game = False
+            app.results_screen = False
 
-        # S - Spawn a target
-        if keys[pygame.K_s]:
-            app.spawn_target()
+        # menu is True
+        if app.menu:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    app.run = False
+                # LMB - Select
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN and
+                    pygame.mouse.get_pressed(3)[0]
+                ):
+                    app.menu_select()
 
-        # Draw the Game Window and Update
-        app.draw_all_elements()
-        pygame.display.update()
+            app.clear_screen()
+            app.draw_main_menu()
+            app.draw_crosshair()
+            pygame.display.update()
 
+        # results_screen is True
+        if app.results_screen:
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
+                    app.run = False
+                # LMB - Select
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN and
+                    pygame.mouse.get_pressed(3)[0]
+                ):
+                    app.scores_select()
+
+            app.clear_screen()
+            app.speedrun_timer.draw_timers(
+                app.game_window, 500, 150, app.timer, "long", app.timer_font
+            )
+            app.draw_timer(70, SCREEN_DIMENSIONS[1] - 50)
+            app.draw_back_button()
+            app.draw_crosshair()
+            pygame.display.update()
+
+        # game is True
+        if app.game:
+
+            app.timer += app.clock.get_rawtime()
+            # EVENTS
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    app.run = False
+                # LMB - Shoot
+                if (
+                    event.type == pygame.MOUSEBUTTONDOWN and
+                    pygame.mouse.get_pressed(3)[0]
+                ):
+                    app.shoot()
+
+            # Draw the Game Window and Update
+            app.draw_all_game_elements()
+            pygame.display.update()
+
+    # run is False
     pygame.quit()
 
 

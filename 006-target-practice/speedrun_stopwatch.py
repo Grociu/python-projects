@@ -113,7 +113,7 @@ speedrun_timer.draw_timers(
     )
 
 By default the mode will be "short", font will be Arial 12 Bold Italic and the
-color will be yellow. As long as you pass the first three arguments you will be
+color will be yellow. As long as you pass the first four arguments you will be
 fine.
 
 Other:
@@ -283,10 +283,12 @@ class SpeedrunTimer(object):
             run_data = [0] + [stage.end_time for stage in self.stages]
         self.add_to_database(run_data)
         self.past_runs.append(PastRun(run_data))
+
+    def reset_stages(self):
         self.update_pb()
+        self.update_stage_pbs()
         self.stages = [Stage(index) for index in range(len(self.stages))]
         self.define_stage_names(self.names)
-        self.update_stage_pbs()
 
     def tester(self):
         """
@@ -315,8 +317,10 @@ class SpeedrunTimer(object):
 
     def start_run(self):
         """
-        Starts a the run.
+        Clears the self.stages data if any and starts a the run.
         """
+        if self.stages[0].end_time != 0:
+            self.reset_stages()
         self.start_stage_timer(0, 0)
 
     def end_run(self):
