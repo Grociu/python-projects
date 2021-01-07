@@ -18,12 +18,16 @@ class TargetPractice(object):
     Attributes:
     game_window: pygame.Surface - main application window
     clock: pygame.time.Clock() - pygame time control object
+    uis: UISelectors object - contains and displays UI elements (buttons)
     speedrun_timer: ss.SpeedrunTimer() - a module to control speedrun timers
     targets: List[Target] - currently active targets
     stage: int - current game stage - controls flow of the game
     stage_shots: int - number of shoots  taken this stage
     current_size: int - targets gets smaller as game progresses
-    run: bool - while true, the game runs
+    run: bool - while True, the application runs
+    menu: bool - while True, main menu is drawn
+    game: bool - while True, the game element runs and is drawn
+    results_screen: bool - while True, the high scores displayed and drawn
     timer: int - represents time elapsed since start of game in ms
     main_font: pygame.font.SysFont - font used for the main timer
     timer_font: pygame.font.SysFont - font used for the speedrun timers
@@ -38,6 +42,11 @@ class TargetPractice(object):
     clear_screen() - clears screen
     draw_timer(x, y) - draws the main game timer
     draw_divider() - draws a line dividing the timers from the game area
+    draw_main_menu() - draws the main menu (executed when menu == True)
+    reset_game_attributes() - set default values so a new game can start
+    menu_select() - executes when a button on main menu is clicked
+    draw_back_button() - draws the back button on the high scores screen
+    select_scores() - executes when a button is pressed on the HS screen
     draw_all_game_elements() - draws all game_window elements
     """
     def __init__(self):
@@ -64,7 +73,7 @@ class TargetPractice(object):
         self.timer = 0
         self.main_font = pygame.font.SysFont("Arial", 30, True, True)
         self.timer_font = pygame.font.SysFont("Arial", 12, True, True)
-        self.timer_area = 200
+        self.timer_area = 220
 
     def spawn_target(self):
         """
@@ -93,8 +102,8 @@ class TargetPractice(object):
         and the game is divided into stages of 3 shots.
 
         After each stage is finished, the self.speedrun_timer is called to
-        start/end it's stage timers. When the last stage is finished, the game
-        ends.
+        start/end its' stage timers. When the last stage is finished, the game
+        ends and the high scores screen is shown.
         """
         mouse_position = pygame.mouse.get_pos()
         for target in self.targets:
@@ -162,14 +171,21 @@ class TargetPractice(object):
         pygame.draw.rect(
             self.game_window,
             (255, 255, 0),
-            (self.timer_area, 0, 2, SCREEN_DIMENSIONS[1])
+            (self.timer_area, 0, 1, SCREEN_DIMENSIONS[1])
         )
 
     def draw_main_menu(self):
+        """
+        Draws the main menu screen, executes when menu == True
+        """
         if self.run and self.menu:
             self.uis.draw_main_menu(self.game_window)
 
     def reset_game_attributes(self):
+        """
+        Resets the game attributes to the defaults so a new game can be started
+        Executed when the play button is pressed
+        """
         self.targets.clear()
         self.stage = 0
         self.stage_shots = 0
@@ -177,26 +193,37 @@ class TargetPractice(object):
         self.timer = 0
 
     def menu_select(self):
+        """
+        Resets game logic attributes dependand on the button clicked in the
+        main menu.
+        """
         mouse_position = pygame.mouse.get_pos()
+        # Pressed the PLAY button
         if self.uis.play_button.rectangle.collidepoint(mouse_position):
             self.menu = False
             self.reset_game_attributes()
             self.game = True
             self.spawn_target()
             self.speedrun_timer.start_run()
-
+        # Pressed the HIGH SCORES button
         if self.uis.high_scores.rectangle.collidepoint(mouse_position):
             self.menu = False
             self.results_screen = True
-
+        # Pressed the QUIT button
         if self.uis.quit_button.rectangle.collidepoint(mouse_position):
             self.menu = False
             self.run = False
 
     def draw_back_button(self):
+        """
+        Draws the button on the High Scores screen.
+        """
         self.uis.draw_back_button(self.game_window)
 
     def scores_select(self):
+        """
+        Controls the clicking of the BACK button on the HS screen.
+        """
         mouse_position = pygame.mouse.get_pos()
         if self.uis.back_button.rectangle.collidepoint(mouse_position):
             self.menu = True
@@ -221,6 +248,23 @@ class TargetPractice(object):
 
 
 class Button(object):
+    """
+    Represents a button drawn on the game screen (menu buttons and HS back
+    button)
+
+    Arguments:
+    rectangle: Rect - area of the button
+    text: str - text to write on the button
+
+    Attributes:
+    rectangle: Rect - area of the button
+    font: pygame.font.SysFont - font used for button label text
+    text: pygame.font.render - text in a form that's ready to be drawn
+
+    Methods:
+    draw_with_offset(window, offset): draws the button on the 'window' centered
+    on the screen, where text is offset from the center of the button.
+    """
     def __init__(self, rectangle: Rect, text: str):
         self.rectangle = rectangle
         self.font = pygame.font.SysFont("Arial", 15, True, True)
@@ -242,6 +286,21 @@ class Button(object):
 
 
 class UISelectors(object):
+    """
+    Class that holds almost of the UI elements like buttons
+
+    Arguments:
+    button_width: int - width of the buttons in px
+    button_height: int - height of the buttons in px
+    button_spacing: int - the free space between buttons in px
+
+    Methods:
+    button_above_screen_center(elevation: int)- Builds the Rect(angle) object
+    using the attributes of this class, where offset is 'distance' from the
+    center of screen
+    draw_main_menu() - draws the main menu buttons
+    draw_back_button() - draws the high scores BACK button
+    """
     def __init__(
         self, button_width: int, button_height: int, button_spacing: int
     ):
@@ -280,11 +339,17 @@ class UISelectors(object):
         )
 
     def draw_main_menu(self, window: pygame.Surface):
+        """
+        Draws the three main menu buttons on Surface window.
+        """
         self.play_button.draw_with_offset(window, -20)
         self.high_scores.draw_with_offset(window, -52)
         self.quit_button.draw_with_offset(window, -20)
 
     def draw_back_button(self, window: pygame.Surface):
+        """
+        Draws the BACK button on Surface window.
+        """
         self.back_button.draw_with_offset(window, -46)
 
 
@@ -393,6 +458,7 @@ def main():
                     app.scores_select()
 
             app.clear_screen()
+            # Draw the full speedrun timers
             app.speedrun_timer.draw_timers(
                 app.game_window, 500, 150, app.timer, "long", app.timer_font
             )
