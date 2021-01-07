@@ -169,13 +169,19 @@ class TargetPractice(object):
         if self.run and self.menu:
             self.uis.draw_main_menu(self.game_window)
 
+    def reset_game_attributes(self):
+        self.targets.clear()
+        self.stage = 0
+        self.stage_shots = 0
+        self.current_size = MAX_TARGET_SIZE
+        self.timer = 0
+
     def menu_select(self):
         mouse_position = pygame.mouse.get_pos()
         if self.uis.play_button.rectangle.collidepoint(mouse_position):
             self.menu = False
+            self.reset_game_attributes()
             self.game = True
-            self.timer = 0
-            self.targets.clear()
             self.spawn_target()
             self.speedrun_timer.start_run()
 
@@ -255,8 +261,6 @@ class UISelectors(object):
         self.back_button = Button(
             self.button_above_screen_center(3), "MAIN MENU"
         )
-        # instructions = ?
-        # title = ?
 
     def button_above_screen_center(self, elevation: int = 0) -> Rect:
         """

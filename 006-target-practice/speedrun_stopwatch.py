@@ -286,8 +286,10 @@ class SpeedrunTimer(object):
 
     def reset_stages(self):
         self.update_pb()
+        self.stages = [
+            Stage(index) for index in range(len(self.stages))
+        ]
         self.update_stage_pbs()
-        self.stages = [Stage(index) for index in range(len(self.stages))]
         self.define_stage_names(self.names)
 
     def tester(self):
@@ -359,8 +361,7 @@ class SpeedrunTimer(object):
         if font is None:
             pygame.font.init()
             font = pygame.font.SysFont("Arial", 12, True, True)
-        current_x = x
-        current_y = y
+        current_x, current_y = x, y
         no_data = font.render("---.--", 1, color)
         # Draw a set of timers for each stage of the game
         for stage in self.stages:
